@@ -5,6 +5,7 @@ import { Search, Scissors, Info, ArrowLeft, ChevronRight, Download, BrushCleanin
 import Image from "next/image"
 import { TELAS } from "../data/telas"
 import { createCombinedImage } from "../utils/imageComposer"
+import { useCallback } from "react"
 
 // Obtener todos los nombres para el placeholder (incluyendo tipos)
 const getAllFabricNames = () => {
@@ -42,21 +43,33 @@ export default function FabricSearchApp() {
     }
   }, [selectedFabric])
 
-  const generateCombinedImage = async () => {
-    if (!selectedFabric) return
+  const generateCombinedImage = useCallback(async () => {
+  if (!selectedFabric) return
 
-    setIsGeneratingImage(true)
-    try {
-      const combinedUrl = await createCombinedImage(selectedFabric.imagenTela, selectedFabric.imagenCierre)
-      setCombinedImageUrl(combinedUrl)
-    } catch (error) {
-      console.error("Error generating combined image:", error)
-      // Usar imagen por defecto si falla
-      setCombinedImageUrl(selectedFabric.imagenCombinada)
-    } finally {
-      setIsGeneratingImage(false)
-    }
+  setIsGeneratingImage(true)
+  try {
+    const combinedUrl = await createCombinedImage(
+      selectedFabric.imagenTela,
+      selectedFabric.imagenCierre
+    )
+    setCombinedImageUrl(combinedUrl)
+  } catch (error) {
+    console.error("Error generating combined image:", error)
+    setCombinedImageUrl(selectedFabric.imagenCombinada)
+  } finally {
+    setIsGeneratingImage(false)
   }
+}, [selectedFabric])
+
+useEffect(() => {
+  if (
+    selectedFabric &&
+    selectedFabric.imagenTela &&
+    selectedFabric.imagenCierre
+  ) {
+    generateCombinedImage()
+  }
+}, [selectedFabric, generateCombinedImage])
 
   const downloadCombinedImage = () => {
     if (combinedImageUrl) {
